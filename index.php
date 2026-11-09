@@ -37,12 +37,12 @@ if (isset($_POST['salvar'])) {
     }
 }
 
-// Excluir Cliente
+// Excluir Cliente - Aponta para index.php
 if (isset($_GET['excluir'])) {
     $id = (int) $_GET['excluir'];
     $stmt = $pdo->prepare("DELETE FROM clientes WHERE id = ?");
     $stmt->execute([$id]);
-    header("Location: painel.php");
+    header("Location: index.php");
     exit;
 }
 
@@ -164,7 +164,7 @@ $clientes = $pdo->query("SELECT * FROM clientes ORDER BY id DESC")->fetchAll(PDO
         <!-- Seção Principal -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
-            <!-- Painel de Gerenciamento / Formulário Inteligente -->
+            <!-- Painel de Gerenciamento / Formulário - Submissão para index.php -->
             <div class="lg:col-span-1">
                 <div class="bg-dark border border-slate-800 rounded-2xl p-6 shadow-2xl sticky top-24 backdrop-blur-sm">
                     <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-800">
@@ -177,7 +177,7 @@ $clientes = $pdo->query("SELECT * FROM clientes ORDER BY id DESC")->fetchAll(PDO
                         <button type="button" id="btn-cancel-edit" onclick="resetForm()" class="hidden text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded-md transition-colors">Cancelar</button>
                     </div>
 
-                    <form action="painel.php" method="POST" class="space-y-4">
+                    <form action="index.php" method="POST" class="space-y-4">
                         <div>
                             <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Identificador Único <span class="text-rose-500">*</span></label>
                             <input type="text" id="in_identificador" name="identificador" placeholder="Ex: MAC ou ID Persistente" required 
@@ -248,13 +248,15 @@ $clientes = $pdo->query("SELECT * FROM clientes ORDER BY id DESC")->fetchAll(PDO
                                 <tr class="bg-slate-900/60 text-slate-400 text-xs font-semibold uppercase tracking-wider border-b border-slate-800">
                                     <th class="py-4 px-6 w-16">#</th>
                                     <th class="py-4 px-6">Cliente / Identificador</th>
+                                    <th class="py-4 px-6">Servidor DNS</th>
+                                    <th class="py-4 px-6">Acesso (User/Pass)</th>
                                     <th class="py-4 px-6 text-right">Ações</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-800/60 text-sm">
                                 <?php if(empty($clientes)): ?>
                                 <tr>
-                                    <td colspan="3" class="py-12 text-center text-slate-500">
+                                    <td colspan="5" class="py-12 text-center text-slate-500">
                                         <div class="flex flex-col items-center justify-center space-y-2">
                                             <i class="fa-regular fa-folder-open text-3xl text-slate-600"></i>
                                             <p>Nenhum dispositivo cadastrado no momento.</p>
@@ -270,16 +272,24 @@ $clientes = $pdo->query("SELECT * FROM clientes ORDER BY id DESC")->fetchAll(PDO
                                         <td class="py-4 px-6">
                                             <div class="font-medium text-white data-nome"><?= htmlspecialchars($c['nome_cliente']) ?></div>
                                             <code class="text-xs text-cyan-400 font-mono data-identificador mt-0.5 inline-block"><?= htmlspecialchars($c['identificador']) ?></code>
-                                            <!-- Dados ocultos guardados para preenchimento no modo de edição -->
-                                            <span class="data-dns hidden"><?= htmlspecialchars($c['servidor_dns']) ?></span>
                                             <span class="data-user hidden"><?= htmlspecialchars($c['usuario']) ?></span>
                                             <span class="data-pass hidden"><?= htmlspecialchars($c['senha']) ?></span>
+                                        </td>
+                                        <td class="py-4 px-6 text-slate-300 text-xs data-dns truncate max-w-[180px]" title="<?= htmlspecialchars($c['servidor_dns']) ?>">
+                                            <?= htmlspecialchars($c['servidor_dns']) ?>
+                                        </td>
+                                        <td class="py-4 px-6 text-slate-300 text-xs font-mono">
+                                            <?php if(!empty($c['usuario'])): ?>
+                                                <span class="text-cyan-300"><?= htmlspecialchars($c['usuario']) ?></span> / <span class="text-slate-400"><?= htmlspecialchars($c['senha']) ?></span>
+                                            <?php else: ?>
+                                                <span class="text-slate-600 italic">Não informado</span>
+                                            <?php endif; ?>
                                         </td>
                                         <td class="py-4 px-6 text-right space-x-2">
                                             <button type="button" onclick="editDevice(this)" title="Editar" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500 hover:text-white transition-all border border-cyan-500/25">
                                                 <i class="fa-solid fa-pen-to-square text-xs"></i>
                                             </button>
-                                            <a href="painel.php?excluir=<?= $c['id'] ?>" onclick="return confirm('Deseja realmente excluir este dispositivo?')" title="Excluir" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white transition-all border border-rose-500/25">
+                                            <a href="index.php?excluir=<?= $c['id'] ?>" onclick="return confirm('Deseja realmente excluir este dispositivo?')" title="Excluir" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white transition-all border border-rose-500/25">
                                                 <i class="fa-solid fa-trash-can text-xs"></i>
                                             </a>
                                         </td>
@@ -296,7 +306,6 @@ $clientes = $pdo->query("SELECT * FROM clientes ORDER BY id DESC")->fetchAll(PDO
     </main>
 
     <script>
-        // Função para carregar os dados na linha para o formulário (Modo Edição)
         function editDevice(element) {
             const row = element.closest('.row-item');
             const nome = row.querySelector('.data-nome').innerText;
@@ -311,7 +320,6 @@ $clientes = $pdo->query("SELECT * FROM clientes ORDER BY id DESC")->fetchAll(PDO
             document.getElementById('in_usuario').value = user;
             document.getElementById('in_senha').value = pass;
 
-            // Altera o visual do formulário para estado de edição
             document.getElementById('form-title').innerText = "Atualizar Dispositivo";
             document.getElementById('form-icon').className = "fa-solid fa-user-gear text-cyan-400";
             document.getElementById('btn-text').innerText = "Salvar Alterações";
@@ -319,7 +327,6 @@ $clientes = $pdo->query("SELECT * FROM clientes ORDER BY id DESC")->fetchAll(PDO
             document.getElementById('in_identificador').focus();
         }
 
-        // Função para resetar o formulário para Nova Ativação
         function resetForm() {
             document.getElementById('in_nome').value = "";
             document.getElementById('in_identificador').value = "";
@@ -333,7 +340,6 @@ $clientes = $pdo->query("SELECT * FROM clientes ORDER BY id DESC")->fetchAll(PDO
             document.getElementById('btn-cancel-edit').classList.add('hidden');
         }
 
-        // Filtro em tempo real
         function filterTable() {
             const query = document.getElementById('table-search').value.toLowerCase();
             const rows = document.querySelectorAll('.row-item');
@@ -341,8 +347,9 @@ $clientes = $pdo->query("SELECT * FROM clientes ORDER BY id DESC")->fetchAll(PDO
             rows.forEach(row => {
                 const txtNome = row.querySelector('.data-nome').innerText.toLowerCase();
                 const txtId = row.querySelector('.data-identificador').innerText.toLowerCase();
+                const txtDns = row.querySelector('.data-dns').innerText.toLowerCase();
 
-                if(txtNome.includes(query) || txtId.includes(query)) {
+                if(txtNome.includes(query) || txtId.includes(query) || txtDns.includes(query)) {
                     row.style.display = "";
                 } else {
                     row.style.display = "none";
