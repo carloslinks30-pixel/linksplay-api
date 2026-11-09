@@ -1,4 +1,7 @@
-FROM php:8.2-apache
-RUN docker-php-ext-install pdo pdo_mysql
-COPY . /var/www/html/
-RUN chown -R www-data:www-data /var/www/html && chmod -R 755 /var/www/html
+services:
+  - type: web
+    name: linksplay-api
+    runtime: php
+    plan: free
+    buildCommand: ""
+    startCommand: php -S 0.0.0.0:$PORT index.php
