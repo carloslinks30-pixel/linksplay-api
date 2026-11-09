@@ -1,0 +1,9 @@
+{
+  "servidores": [
+    { "numero": "1", "nome": "Freevis", "dns": "http://tecno1.ink:8880" },
+    { "numero": "2", "nome": "Canal 231", "dns": "http://canal231.com" },
+    { "numero": "3", "nome": "Desbrave", "dns": "http://desbrave.shop" },
+    { "numero": "4", "nome": "Desbravi", "dns": "http://desbravi.top" },
+    { "numero": "5", "nome": "Nano Ignite", "dns": "http://nanoignite.click" }
+  ]
+}
